@@ -24,8 +24,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from libqtile import bar, layout, widget
-from libqtile.config import Click, Drag, Group, Key, Match, Screen
+from libqtile import bar, layout, widget, hook
+from libqtile.config import Click, Drag, Group, Key, Match, Screen, ScratchPad, DropDown
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
 
@@ -79,9 +79,13 @@ keys = [
     Key([],"XF86AudioLowerVolume", lazy.spawn("amixer -c 1 sset Master 1- unmute")),
     Key([],"XF86AudioRaiseVolume", lazy.spawn("amixer -c 1 sset Master 1+ unmute")),
 
-    #lumi
+    #Brightness
     Key([],"XF86MonBrightnessUp", lazy.spawn("brightnessctl set +10%")),
     Key([],"XF86MonBrightnessDown", lazy.spawn("brightnessctl set 10%-")),
+
+    #Rofi
+    Key([mod], "r", lazy.spawn("rofi -show drun")),
+    #Key([mod, "shift"], "p", lazy.spawn("rofi -show power-menu -modi power-menu:rofi-power-menu")),
 ]
 
 #groups = [Group(i) for i in "123456789"]
@@ -145,8 +149,10 @@ for i in groups:
         #Key([mod, "shift"], i.name, lazy.window.togroup(i.name)),
 # MOVE WINDOW TO SELECTED WORKSPACE 1-10 AND FOLLOW MOVED WINDOW TO WORKSPACE
         Key([mod, "shift"], i.name, lazy.window.togroup(i.name) , lazy.group[i.name].toscreen()),
+        Key([mod], "space", lazy.group["scratchpad"].dropdown_toggle("Terminal")),
     ])
 
+groups.append(ScratchPad("scratchpad", [DropDown("Terminal", terminal, opacity=0.8, height=0.5, width=0.8)]))
 
 def init_layout_theme():
     return {"margin":5,
@@ -157,14 +163,13 @@ def init_layout_theme():
 
 layout_theme = init_layout_theme()
 
-
 layouts = [
-    layout.MonadTall(border_focus='A89984',border_normal='282828', border_width=4,margin=15, ratio=0.60),
+    layout.MonadTall(border_focus='FBF1C7',border_normal='1D2021', border_width=4,margin=15, ratio=0.60),
 ]
 
 widget_defaults = dict(
     font="PxPlus IBM VGA 8x16",
-    fontsize=15,
+    fontsize=14,
     padding=3,
 )
 extension_defaults = widget_defaults.copy()
@@ -175,33 +180,38 @@ screens = [
             [   
                 #widget.TextBox(foreground='A5A5A5',fmt=''),
                 widget.GroupBox(
-                    fontsize=16,
+                    fontsize=18,
                     rounded=False,
                     active='504945',
                     inactive='504945',
                     borderwidth=5,
-                    highlight_method="block",
-                    block_highlight_text_color='665C54',
-                    this_screen_border='EBDBB2',
-                    this_current_screen_border='EBDBB2'),
-                widget.TextBox(foreground='D65D0E',fmt='>>',padding=3),
+                    highlight_method="text",
+                    #block_highlight_text_color='665C54',
+                    this_screen_border='FE8019',
+                    this_current_screen_border='FE8019'),
+                widget.TextBox(foreground='CC241D',fmt='>>',padding=3),
                 widget.WindowName(foreground='EBDBB2',fmt='{}',padding=3),
-                widget.Wallpaper(directory='/home/knette/Images/wallpaper/',label='',padding=5),
+                widget.Wallpaper(directory='/home/knette/Images/wallpaper',foreground='1D2021'),
                 #widget.Chord(chords_colors={"launch": ("#ff0000", "#ffffff"),},name_transform=lambda name: name.upper(),),
+                widget.TextBox(foreground='B16286',fmt='CPU:',padding=3),
+                widget.CPU(foreground='D3869B',format='{freq_current}GHz'),
+                widget.TextBox(foreground='CC241D',fmt='|',padding=3),
                 widget.TextBox(foreground='D79921',fmt='Volume:',padding=0),
                 widget.Volume(fmt='{}',foreground='FABD2F',padding=5),
                 widget.TextBox(foreground='CC241D',fmt='|',padding=3),
                 widget.TextBox(foreground='98971A',fmt='Battery:',padding=5),
                 widget.Battery(foreground='B8BB26',format='{percent:2.0%}', low_foreground='FF0000', low_percentage=0.15,padding=5),
                 widget.TextBox(foreground='CC241D',fmt='|',padding=3),
-                widget.Wlan(interface='wlan0',foreground='83A598',disconnected_message='Disconnected',padding=5),
+                widget.Wlan(
+                    interface='wlp3s0',foreground='83A598',disconnected_message='Disconnected',padding=5
+                    ),
                 widget.TextBox(foreground='CC241D',fmt='|',padding=3),
                 widget.Clock(foreground='8EC07C',format="%I:%M",padding=5),
                 widget.TextBox(foreground='CC241D',fmt='|',padding=3),
-                widget.QuickExit(foreground='EBDBB2',default_text='[shutdown]',countdown_format='[   {}s   ]',padding=3),
-                #widget.TextBox(foreground='A5A5A5',fmt=''),
+                widget.QuickExit(foreground='EBDBB2',default_text='[shutdown]',countdown_format='[   {}s   ]', countdown_start=1,padding=3),
+                #widget.TextBox(foreground='EBDBB2',fmt='[shutdown]', padding=3, mouse_callback={'Button1':lazy.spawn("alacritty")}),
             ],
-            24,
+            22,
             #border_width=[3, 3, 3, 3],  # Draw top, right, bottom, left border
             #border_color=["EBDBB2", "EBDBB2", "EBDBB2", "EBDBB2"],  # Borders are magenta
             background='1D2021'
